@@ -2,9 +2,11 @@ use bitcoin::blockdata::block::Block;
 use bitcoin::blockdata::transaction::Transaction;
 use bitcoin::consensus::encode::deserialize;
 use std::convert::TryInto;
+use std::env;
 
 fn main() {
-    let bitcoind_zmq_url = "tcp://btc-node-testnet-01.do.fressets.net:28332";
+    let args: Vec<String> = env::args().collect();
+    let bitcoind_zmq_url = &args[1];
 
     let ctx = zmq::Context::new();
     let socket = ctx.socket(zmq::SUB).unwrap();
@@ -13,7 +15,9 @@ fn main() {
     socket.set_subscribe(b"rawblock").unwrap();
     socket.set_subscribe(b"rawtx").unwrap();
     socket.set_subscribe(b"sequence").unwrap();
-    socket.connect(bitcoind_zmq_url).expect("failed to connect");
+    socket
+        .connect(&bitcoind_zmq_url)
+        .expect("failed to connect");
 
     loop {
         let data = socket.recv_multipart(0).unwrap();
